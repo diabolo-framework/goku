@@ -39,7 +39,8 @@ class VerfyEmail extends WebPageAction {
         
         $user = User::findOne(['id'=>$verfication->uesr_id]);
         
-        if ( time() > $verfication->expired_at ) {
+        $expiredAt = strtotime($verfication->expired_at);
+        if ( time() > $expiredAt ) {
             $emailVerfication = new UserEmailVerfication();
             $emailVerfication->uesr_id = $user->id;
             $emailVerfication->verficationViewPath = $this->getViewPathByName('User/EmailVerfication', 'Particle');

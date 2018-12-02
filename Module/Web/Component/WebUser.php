@@ -50,6 +50,9 @@ class WebUser {
      */
     public static function login( $email, $password ) {
         $user = User::findOne(['email'=>$email]);
+        if ( null === $user ) {
+            throw new \Exception('user does not exists');
+        }
         if ( User::STATUS_FREEZED == $user->status ) {
             throw new \Exception('user has been freezed.');
         }

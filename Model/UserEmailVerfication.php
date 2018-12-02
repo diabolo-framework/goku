@@ -59,7 +59,7 @@ class UserEmailVerfication extends ActiveRecord {
      */
     public function generateExpiredAt(UserEmailVerfication $model, Attribute $attr) {
         $liftime = X::system()->getConfiguration()->get('params')->get('emailVerficationLifeTime', 3600);
-        return time() + $liftime;
+        return date('Y-m-d H:i:s',time() + $liftime);
     }
     
     /**
