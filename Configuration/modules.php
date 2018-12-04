@@ -10,11 +10,11 @@ return array (
     'default' => false,
     'params' => array(),
 ),
-// 'Api' => array(
-//     'enable' => false,
-//     'default' => false,
-//     'params' => array(),
-// ),
+'Api' => array(
+    'enable' => true,
+    'default' => false,
+    'params' => array(),
+),
 // 'Scheduler' => array(
 //     'enable' => false,
 //     'default' => false,
