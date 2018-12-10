@@ -8,8 +8,9 @@ $processor = $vars['processor'];
 <p> -- <?php echo Html::HTMLEncode($event->name); ?></p>
 <br>
 
-<p>HTTP METHOD : <?php echo $processor->http_method; ?></p>
-<p>HTTP URL : <?php echo $processor->http_url; ?></p>
+<p><strong>ID :</strong> <?php echo $processor->identifier; ?></p>
+<p><strong>HTTP METHOD :</strong> <?php echo $processor->http_method; ?></p>
+<p><strong>HTTP URL :</strong> <?php echo $processor->http_url; ?></p>
 <p><?php echo Html::HTMLEncode($processor->description); ?></p>
 
 <a href="index.php?module=web&action=processor/edit&project=<?php echo $processor->project_id?>&id=<?php echo $processor->id?>"

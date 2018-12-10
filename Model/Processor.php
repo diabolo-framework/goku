@@ -3,6 +3,7 @@ namespace X\Model;
 use X\Service\Database\ActiveRecord;
 /**
  * @property int $id
+ * @property int $identifier
  * @property string $name
  * @property int $project_id
  * @property int $event_id
@@ -22,6 +23,7 @@ class Processor extends ActiveRecord {
     protected function getDefination() {
         return array(
             'id'            => 'INT PRIMARY_KEY AUTO_INCREASE NOT_NULL UNIQUE',
+            'identifier'    => 'STRING NOT_NULL NOT_EMPTY UNIQUE',
             'name'          => 'STRING NOT_NULL',
             'project_id'    => 'INT NOT_NULL',
             'event_id'      => 'INT NOT_NULL',

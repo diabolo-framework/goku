@@ -37,6 +37,16 @@ $processor = $vars['processor'];
   </div>
   
   <div class="form-group">
+    <label>ID</label>
+    <input 
+      type="text" 
+      class="form-control" 
+      name="form[identifier]"
+      value="<?php echo Html::HTMLAttributeEncode($processor->identifier); ?>"
+    >
+  </div>
+  
+  <div class="form-group">
     <label>URL</label>
     <div class="input-group">
       <div class="input-group-btn">

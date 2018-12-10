@@ -2,6 +2,7 @@
 namespace X\Module\Api\Component;
 use X\Service\XAction\Handler\AjaxAction;
 use X\Model\User;
+use X\Core\X;
 /**
  * @param string $account
  * @param string $sign 
@@ -44,13 +45,22 @@ abstract class ApiAction extends AjaxAction {
      */
     protected function doRunAction($parameters) {
         $data = json_decode($parameters['data'], true);
-        return parent::doRunAction($data);
+        try {
+            return parent::doRunAction($data);
+        } catch ( \Exception $e ) {
+            $this->error($e->getMessage());
+        }
     }
     
     /**
      * validate sign
      */
     private function validateSign() {
+        $validationEnable = X::system()->getConfiguration()->get('params')->get('api_validation_enable', true);
+        if ( !$validationEnable ) {
+            return true;
+        }
+        
         $data = $this->getParameter('data');
         $data = json_decode($data, true);
         if ( null === $data ) {
