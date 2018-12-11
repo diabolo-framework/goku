@@ -30,6 +30,14 @@ class ProcessQueue extends ActiveRecord {
     }
     
     /**
+     * 获取请求数据
+     * @return mixed
+     */
+    public function getRequestParameters() {
+        return json_decode($this->parameters, true);
+    }
+    
+    /**
      * @return string
      */
     public static function getDB () {

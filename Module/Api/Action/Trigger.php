@@ -27,6 +27,7 @@ class Trigger extends ApiAction {
         $queueItem->project_id = $project->id;
         $queueItem->event_id = $event->id;
         $queueItem->parameters = $data;
+        $queueItem->started_at = date('Y-m-d H:i:s');
         
         # parse processor
         if ( null !== $processor ) {

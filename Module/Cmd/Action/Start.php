@@ -22,61 +22,58 @@ class Start extends CommandAction {
      * @see \X\Service\XAction\Util\Action::runAction()
      */
     public function runAction() {
-        do {
-            /** @var $queueItem ProcessQueue */
-            $queueItem = ProcessQueue::find()->orderBy('id', SORT_ASC)->one();
-            if ( null === $queueItem ) {
-                sleep(300);
-                continue;
+        /** @var $queueItem ProcessQueue */
+        $queueItem = ProcessQueue::find()->orderBy('id', SORT_ASC)->one();
+        if ( null === $queueItem ) {
+            return ;
+        }
+        
+        $this->queueItem = $queueItem;
+        $this->project = $project = Project::findOne(['id'=>$this->queueItem->project_id]);
+        
+        $startTime = microtime(true);
+        $event = Event::findOne(['id'=>$queueItem->event_id]);
+        $this->event = $event;
+        
+        $eventHistory = new EventHistory();
+        $eventHistory->event_id = $event->id;
+        $eventHistory->trigged_at = $queueItem->started_at;
+        $eventHistory->started_at = date('Y-m-d H:i:s');
+        $eventHistory->parameters = $queueItem->parameters;
+        $eventHistory->save();
+        $this->eventHistory = $eventHistory;
+        
+        $successCount = 0;
+        $errorCount = 0;
+        if ( 0 !== (int)$queueItem->processor_id ) {
+            $processor = Processor::findOne(['id'=>$queueItem->processor_id]);
+            $this->log(0, 'Project:[%s] Event:[%s] TriggedAt:[%s] Processor:[%s]', $project->name, $event->name, $queueItem->started_at, $processor->name);
+            $processorHistory = $this->executeProcessor($processor);
+            if ( ProcessorHistory::STATUS_SUCCESS == $processorHistory->status ) {
+                $successCount ++;
+            } else {
+                $errorCount ++;
             }
-            
-            $this->queueItem = $queueItem;
-            $this->project = $project = Project::findOne(['id'=>$this->queueItem->project_id]);
-            
-            $startTime = microtime(true);
-            $event = Event::findOne(['id'=>$queueItem->event_id]);
-            $this->event = $event;
-            
-            $eventHistory = new EventHistory();
-            $eventHistory->event_id = $event->id;
-            $eventHistory->trigged_at = $queueItem->started_at;
-            $eventHistory->started_at = date('Y-m-d H:i:s');
-            $eventHistory->parameters = $queueItem->parameters;
-            $eventHistory->save();
-            $this->eventHistory = $eventHistory;
-            
-            $successCount = 0;
-            $errorCount = 0;
-            if ( 0 !== (int)$queueItem->processor_id ) {
-                $processor = Processor::findOne(['id'=>$queueItem->processor_id]);
-                $this->log(0, 'Project:[%s] Event:[%s] TriggedAt:[%s] Processor:[%s]', $project->name, $event->name, $queueItem->started_at, $processor->name);
+        } else {
+            $this->log(0, 'Project:[%s] Event:[%s] TriggedAt:[%s] Processor:ALL', $project->name, $event->name, $queueItem->started_at);
+            $processorCount = Processor::find()->where(['event_id'=>$event->id])->count();
+            for ( $i=0; $i<$processorCount; $i++ ) {
+                $processor = Processor::find()->where(['event_id'=>$event->id])->offset($i)->one();
                 $processorHistory = $this->executeProcessor($processor);
                 if ( ProcessorHistory::STATUS_SUCCESS == $processorHistory->status ) {
                     $successCount ++;
                 } else {
                     $errorCount ++;
                 }
-            } else {
-                $this->log(0, 'Project:[%s] Event:[%s] TriggedAt:[%s] Processor:ALL', $project->name, $event->name, $queueItem->started_at);
-                $processorCount = Processor::find()->where(['event_id'=>$event->id])->count();
-                for ( $i=0; $i<$processorCount; $i++ ) {
-                    $processor = Processor::find()->where(['event_id'=>$event->id])->offset($i)->one();
-                    $processorHistory = $this->executeProcessor($processor);
-                    if ( ProcessorHistory::STATUS_SUCCESS == $processorHistory->status ) {
-                        $successCount ++;
-                    } else {
-                        $errorCount ++;
-                    }
-                }
             }
-            
-            $eventHistory->ended_at = date('Y-m-d H:i:s');
-            $eventHistory->duration = microtime(true) - $startTime;
-            $eventHistory->summary = "Success:{$successCount}; Error:{$errorCount}";
-            $eventHistory->save();
-            
-            $queueItem->delete();
-        } while ( true );
+        }
+        
+        $eventHistory->ended_at = date('Y-m-d H:i:s');
+        $eventHistory->duration = microtime(true) - $startTime;
+        $eventHistory->summary = "Success:{$successCount}; Error:{$errorCount}";
+        $eventHistory->save();
+        
+        $queueItem->delete();
     }
     
     /**
@@ -92,7 +89,7 @@ class Start extends CommandAction {
         
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $processor->http_url);
-        curl_setopt($ch,CURLOPT_HEADER, false);
+        curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
@@ -102,11 +99,11 @@ class Start extends CommandAction {
         case 'GET': break;
         case 'POST':
             curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $this->queueItem->parameters);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $this->queueItem->getRequestParameters());
             break;
         case 'PUT':
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $this->queueItem->parameters);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $this->queueItem->getRequestParameters());
             break;
         case 'DELETE':
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
@@ -124,12 +121,12 @@ class Start extends CommandAction {
         $history->started_at = date('Y-m-d H:i:s', intval($startTime));
         $history->duration = microtime(true) - $startTime;
         $history->event_history_id = $this->eventHistory->id;
-        if('200' === $httpResponseCode){
+        if( 200 === (int)$httpResponseCode){
             $history->status = 0;
         } else {
             $history->status = 1;
-            $history->message = $response;
         }
+        $history->message = $response;
         $history->save();
         
         return $history;
