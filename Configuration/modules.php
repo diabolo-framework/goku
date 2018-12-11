@@ -16,7 +16,7 @@ return array (
     'params' => array(),
 ),
 'Cmd' => array(
-    'enable' => false,
+    'enable' => true,
     'default' => false,
     'params' => array(),
 ),
