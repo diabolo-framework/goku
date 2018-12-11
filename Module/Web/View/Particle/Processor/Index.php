@@ -9,10 +9,12 @@ $processors = $vars['processors'];
   &nbsp;&nbsp;
   <small>
     <small>
-      <a 
-        href="index.php?module=web&action=project/unlisten&id=<?php echo $project->id; ?>" 
-        class="btn btn-default btn-xs"
-      >unlisten</a>
+      <button 
+         class="btn btn-danger btn-xs"
+         data-toggle="goku-dialog-confirm"
+         data-message="是否停止处理该项目的事件？"
+         data-yes-url="index.php?module=web&action=project/unlisten&id=<?php echo $project->id; ?>"
+      >unlisten</button>
     </small>
   </small>
 </h2>
@@ -32,24 +34,30 @@ $processors = $vars['processors'];
       <td><?php echo Html::HTMLEncode($processor->getEvent()->name); ?></td>
       <td><?php echo Html::HTMLEncode($processor->description); ?> </td>
       <td>
-        <a href="index.php?module=web&action=processor/delete&id=<?php echo $processor->id; ?>"
-           class="btn btn-default btn-xs"
-        >Delete</a>
+        <button
+           class="btn btn-danger btn-xs"
+           data-toggle="goku-dialog-confirm"
+           data-message="是否删除该处理器？"
+           data-yes-url="index.php?module=web&action=processor/delete&id=<?php echo $processor->id; ?>"
+        >Delete</button>
+        <?php if ( 0 == $processor->status ) : ?>
+        <button 
+           class="btn btn-danger btn-xs"
+           data-toggle="goku-dialog-confirm"
+           data-message="是否禁用该处理器？"
+           data-yes-url="index.php?module=web&action=processor/disable&id=<?php echo $processor->id; ?>"
+        >Disable</button>
+        <?php else : ?>
+        <a href="index.php?module=web&action=processor/enable&id=<?php echo $processor->id; ?>"
+           class="btn btn-primary btn-xs"
+        >Enable</a>
+        <?php endif; ?>
         <a href="index.php?module=web&action=processor/edit&id=<?php echo $processor->id; ?>&project=<?php echo $project->id; ?>"
            class="btn btn-default btn-xs"
         >Edit</a>
         <a href="index.php?module=web&action=processor/detail&id=<?php echo $processor->id; ?>" 
            class="btn btn-default btn-xs"
         >Detail</a>
-        <?php if ( 0 == $processor->status ) : ?>
-        <a href="index.php?module=web&action=processor/disable&id=<?php echo $processor->id; ?>"
-           class="btn btn-default btn-xs"
-        >Disable</a>
-        <?php else : ?>
-        <a href="index.php?module=web&action=processor/enable&id=<?php echo $processor->id; ?>"
-           class="btn btn-default btn-xs"
-        >Enable</a>
-        <?php endif; ?>
         <a href="index.php?module=web&action=processor/history&id=<?php echo $processor->id; ?>"
            class="btn btn-default btn-xs"
         >History</a>

@@ -29,3 +29,20 @@ $user = $vars['user'];
   </div>
 </div>
 </nav>
+
+<!-- 确认对话框  -->
+<div class="modal fade" id="goku-dialog-confirm" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">操作确认</h4>
+      </div>
+      <div class="modal-body" id="goku-dialog-confirm-content"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+        <a href="#" class="btn btn-primary" id="goku-dialog-confirm-yes-url">确定</a>
+      </div>
+    </div>
+  </div>
+</div>
