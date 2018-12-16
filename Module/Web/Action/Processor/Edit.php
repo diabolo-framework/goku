@@ -29,6 +29,8 @@ class Edit extends WebPageAction {
             $processor->setValues($form);
             if ( $processor->save() ) {
                 $this->gotoURL('index.php?module=web&action=processor/detail',array('id'=>$processor->id));
+            } else {
+                throw new \Exception("failed to save processor : ".json_encode($processor->getErrors()));
             }
         }
         
